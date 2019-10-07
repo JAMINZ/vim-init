@@ -15,7 +15,6 @@
 "======================================================================
 " vim: set ts=4 sw=4 tw=78 noet :
 
-
 "----------------------------------------------------------------------
 " INSERT 模式下使用 EMACS 键位
 "----------------------------------------------------------------------
@@ -24,20 +23,39 @@ inoremap <c-e> <end>
 inoremap <c-d> <del>
 inoremap <c-_> <c-k>
 
-
 "----------------------------------------------------------------------
-" 设置 CTRL+HJKL 移动光标（INSERT 模式偶尔需要移动的方便些）
+" 设置 CTRL+HJKL 移动光标（INSERT 模式偶尔需要移动的方便些）--old
+" 设置 Alt+HJKL 移动光标（INSERT 模式偶尔需要移动的方便些）--new
 " 使用 SecureCRT/XShell 等终端软件需设置：Backspace sends delete
 " 详见：http://www.skywind.me/blog/archives/2021
+" http://www.skywind.me/blog/archives/1846
 "----------------------------------------------------------------------
-noremap <C-h> <left>
-noremap <C-j> <down>
-noremap <C-k> <up>
-noremap <C-l> <right>
-inoremap <C-h> <left>
-inoremap <C-j> <down>
-inoremap <C-k> <up>
-inoremap <C-l> <right>
+" noremap <C-h> <left>
+" noremap <C-j> <down>
+" noremap <C-k> <up>
+" noremap <C-l> <right>
+" inoremap <C-h> <left>
+" inoremap <C-j> <down>
+" inoremap <C-k> <up>
+" inoremap <C-l> <right>
+
+" noremap <m-h> <left>
+" noremap <M-j> <down>
+" noremap <M-k> <up>
+" noremap <m-l> <right>
+" inoremap <m-h> <left>
+" inoremap <M-j> <down>
+" inoremap <M-k> <up>
+" inoremap <m-l> <right>
+
+noremap <ESC>h <left>
+noremap <ESC>j <down>
+noremap <ESC>k <up>
+noremap <ESC>l <right>
+inoremap <ESC>h <left>
+inoremap <ESC>j <down>
+inoremap <ESC>k <up>
+inoremap <ESC>l <right>
 
 
 "----------------------------------------------------------------------
@@ -94,6 +112,11 @@ inoremap <silent><m-8> <ESC>:tabn 8<cr>
 inoremap <silent><m-9> <ESC>:tabn 9<cr>
 inoremap <silent><m-0> <ESC>:tabn 10<cr>
 
+"----------------------------------------------------------------------
+" Shift+N 切换 tab
+"----------------------------------------------------------------------
+noremap <S-l> gt
+noremap <S-h> gT
 
 " MacVim 允许 CMD+数字键快速切换标签
 if has("gui_macvim")
@@ -193,14 +216,23 @@ inoremap <m-y> <c-\><c-o>d$
 " 传统的 CTRL+hjkl 移动窗口不适用于 vim 8.1 的终端模式，CTRL+hjkl 在
 " bash/zsh 及带文本界面的程序中都是重要键位需要保留，不能 tnoremap 的
 "----------------------------------------------------------------------
-noremap <m-H> <c-w>h
-noremap <m-L> <c-w>l
-noremap <m-J> <c-w>j
-noremap <m-K> <c-w>k
-inoremap <m-H> <esc><c-w>h
-inoremap <m-L> <esc><c-w>l
-inoremap <m-J> <esc><c-w>j
-inoremap <m-K> <esc><c-w>k
+" noremap <m-H> <c-w>h
+" noremap <m-L> <c-w>l
+" noremap <m-J> <c-w>j
+" noremap <m-K> <c-w>k
+" inoremap <m-H> <esc><c-w>h
+" inoremap <m-L> <esc><c-w>l
+" inoremap <m-J> <esc><c-w>j
+" inoremap <m-K> <esc><c-w>k
+nnoremap <C-h> <C-w>h
+nnoremap <C-j> <C-w>j
+nnoremap <C-k> <C-w>k
+nnoremap <C-l> <C-w>l
+inoremap <C-h> <Esc><C-w>h
+inoremap <C-j> <Esc><C-w>j
+inoremap <C-k> <Esc><C-w>k
+inoremap <C-l> <Esc><C-w>l
+
 
 if has('terminal') && exists(':terminal') == 2 && has('patch-8.1.1')
 	" vim 8.1 支持 termwinkey ，不需要把 terminal 切换成 normal 模式
@@ -221,6 +253,18 @@ elseif has('nvim')
 	tnoremap <m-q> <c-\><c-n>
 endif
 
+" 水平窗口:sp
+nmap wsp :sp<cr>
+" 垂直窗口:vsp
+nmap wvsp :vsp<cr>
+" 遍历子窗口
+nnoremap wn <C-W><C-W>"
+
+" 窗口大小调整
+nnoremap + :resize +1<cr>
+nnoremap _ :resize -1<cr>
+nnoremap \ :vertical resize +1<cr>
+nnoremap ; :vertical resize -1<cr>
 
 
 "----------------------------------------------------------------------
@@ -235,25 +279,25 @@ let g:asyncrun_open = 6
 let g:asyncrun_bell = 1
 
 " 设置 F10 打开/关闭 Quickfix 窗口
-nnoremap <F10> :call asyncrun#quickfix_toggle(6)<cr>
+" nnoremap <F10> :call asyncrun#quickfix_toggle(6)<cr>
 
 " F9 编译 C/C++ 文件
-nnoremap <silent> <F9> :AsyncRun gcc -Wall -O2 "$(VIM_FILEPATH)" -o "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" <cr>
+" nnoremap <silent> <F9> :AsyncRun gcc -Wall -O2 "$(VIM_FILEPATH)" -o "$(VIM_FILEDIR)/$(VIM_FILENOEXT)" <cr>
 
 " F5 运行文件
-nnoremap <silent> <F5> :call ExecuteFile()<cr>
+" nnoremap <silent> <F5> :call ExecuteFile()<cr>
 
 " F7 编译项目
-nnoremap <silent> <F7> :AsyncRun -cwd=<root> make <cr>
+" nnoremap <silent> <F7> :AsyncRun -cwd=<root> make <cr>
 
 " F8 运行项目
-nnoremap <silent> <F8> :AsyncRun -cwd=<root> -raw make run <cr>
+" nnoremap <silent> <F8> :AsyncRun -cwd=<root> -raw make run <cr>
 
 " F6 测试项目
-nnoremap <silent> <F6> :AsyncRun -cwd=<root> -raw make test <cr>
+" nnoremap <silent> <F6> :AsyncRun -cwd=<root> -raw make test <cr>
 
 " 更新 cmake
-nnoremap <silent> <F4> :AsyncRun -cwd=<root> cmake . <cr>
+" nnoremap <silent> <F4> :AsyncRun -cwd=<root> cmake . <cr>
 
 " Windows 下支持直接打开新 cmd 窗口运行
 if has('win32') || has('win64')
@@ -331,3 +375,65 @@ else
 endif
 
 
+nmap <leader>o :only<cr>
+
+"Fast saving
+nmap <silent> <leader>ww :w<cr>
+nmap <silent> <leader>wa :wa<cr>
+nmap <silent> <leader>WW :w<cr>
+nmap <silent> <leader>wf :w!<cr>
+nmap <silent> <leader>WF :w!<cr>
+
+"Fast quiting
+nmap <silent> <leader>ow :vs<cr>
+" nmap <silent> <leader>cw :q!<cr> " conflict
+nmap <silent> <leader>qw :wq<cr>
+nmap <silent> <leader>qf :q!<cr>
+nmap <silent> <leader>zz :q!<cr>:vs<cr>
+nmap <silent> <leader>qq :cclose<cr>:q<cr>
+nmap <silent> <leader>qa :qa<cr>
+
+"Fast remove highlight search
+nmap <silent> <SPACE> :nohl<cr>
+
+"Fast redraw
+" nmap <silent> <leader>rr :redraw!<cr>
+nmap <silent> <leader>rr :bufdo e!<cr>
+
+
+" ============================================================================
+" F keyboard mapping {{{
+" ============================================================================
+
+" F2 using Ag searching.
+
+set pastetoggle=<F3>            "    when in insert mode, press <F5> to go to
+                                "    paste mode, where you can paste mass data
+                                "    that won't be autoindented
+
+" disbale paste mode when leaving insert mode
+au InsertLeave * set nopaste
+
+" F4 行号开关，用于鼠标复制代码用
+" 为方便复制，用<F4>开启/关闭行号显示:
+function! HideNumber()
+  if(&relativenumber == &number)
+    set relativenumber! number!
+  elseif(&number)
+    set number!
+  else
+    set relativenumber!
+  endif
+  set number?
+endfunc
+nnoremap <F4> :call HideNumber()<CR>
+
+" F3 显示可打印字符开关
+" nnoremap <F3> :set list! list?<CR>
+" F4 换行开关
+" nnoremap <F4> :set wrap! wrap?<CR>
+
+" F6 语法开关，关闭语法可以加快大文件的展示
+nnoremap <F6> :exec exists('syntax_on') ? 'syn off' : 'syn on'<CR>
+
+" }}}

@@ -8,8 +8,6 @@
 "======================================================================
 " vim: set ts=4 sw=4 tw=78 noet :
 
-
-
 "----------------------------------------------------------------------
 " 默认情况下的分组，可以再前面覆盖之
 "----------------------------------------------------------------------
@@ -17,6 +15,9 @@ if !exists('g:bundle_group')
 	let g:bundle_group = ['basic', 'tags', 'enhanced', 'filetypes', 'textobj']
 	let g:bundle_group += ['tags', 'airline', 'nerdtree', 'ale', 'echodoc']
 	let g:bundle_group += ['leaderf']
+	let g:bundle_group += ['fzf']
+	let g:bundle_group += ['old']
+	let g:bundle_group += ['ycm']
 endif
 
 
@@ -153,7 +154,9 @@ if index(g:bundle_group, 'enhanced') >= 0
 	Plug 'terryma/vim-expand-region'
 
 	" 快速文件搜索
-	Plug 'junegunn/fzf'
+	" Plug 'junegunn/fzf'
+	Plug 'junegunn/fzf',{ 'do': './install --all' }
+	Plug 'junegunn/fzf.vim'
 
 	" 给不同语言提供字典补全，插入模式下 c-x c-k 触发
 	Plug 'asins/vim-dict'
@@ -175,6 +178,181 @@ if index(g:bundle_group, 'enhanced') >= 0
 	map <m--> <Plug>(expand_region_shrink)
 endif
 
+" ============================================================================
+" FZF {{{
+" The function the same as LeaderF.
+" ============================================================================
+" refer this config from github: junegunn/dotfiles
+"  fzf.vim
+if index(g:bundle_group, 'fzf') >= 0
+	nnoremap <silent> <Leader>C        :Colors<CR>
+	nnoremap <silent> <Leader>b  	   :Buffers<CR>
+	nnoremap <silent> <Leader>f 	   :Files<CR>
+	nnoremap <silent> <Leader>l        :Lines<CR>
+	nnoremap <silent> <Leader>ag       :Ag <C-R><C-W><CR>
+	nnoremap <silent> <Leader>AG       :Ag <C-R><C-A><CR>
+	xnoremap <silent> <Leader>ag       y:Ag <C-R>"<CR>
+	nnoremap <silent> <Leader>`        :Marks<CR>
+
+
+	nmap <Leader>f :Files<CR>
+	nmap <Leader>F :GFiles<CR>
+	nmap <Leader>b :Buffers<CR>
+	nmap <Leader>h :History<CR>
+	nmap <Leader>t :BTags<CR>
+	nmap <Leader>T :Tags<CR>
+	nmap <Leader>l :BLines<CR>
+	nmap <Leader>L :Lines<CR>
+	nmap <Leader>' :Marks<CR>
+	nmap <Leader>: :History:<CR>
+	" nmap <Leader>/ :History/<CR>
+
+	" 因为ripgrep是目前性能最好的文本内容搜索工具，所以我们可以自己定义一个命令
+	command! -bang -nargs=* Rg
+	  \ call fzf#vim#grep(
+	  \   'rg --column --line-number --no-heading --color=always --smart-case '.shellescape(<q-args>), 1,
+	  \   <bang>0 ? fzf#vim#with_preview('up:60%')
+	  \           : fzf#vim#with_preview('right:50%:hidden', '?'),
+	  \   <bang>0)
+
+
+	" Mapping selecting mappings
+	nmap <leader><tab> <plug>(fzf-maps-n)
+	xmap <leader><tab> <plug>(fzf-maps-x)
+	omap <leader><tab> <plug>(fzf-maps-o)
+
+	" " Insert mode completion
+	imap <c-x><c-k> <plug>(fzf-complete-word)
+	imap <c-x><c-f> <plug>(fzf-complete-path)
+	imap <c-x><c-j> <plug>(fzf-complete-file-ag)
+	imap <c-x><c-l> <plug>(fzf-complete-line)
+
+	" Advanced customization using autoload functions
+	inoremap <expr> <c-x><c-k> fzf#vim#complete#word({'left': '15%'})
+
+
+	" -------------------- {
+	" 上面的命令都可以通过ctrl-t, ctrl-x, ctrl-v来在new tab, new split, new vsplit窗口打开
+	" This is the default extra key bindings
+	let g:fzf_action = {
+	  \ 'ctrl-t': 'tab split',
+	  \ 'ctrl-x': 'split',
+	  \ 'ctrl-v': 'vsplit' }
+
+	" Default fzf layout
+	" - down / up / left / right
+	let g:fzf_layout = { 'down': '~40%' }
+
+	" In Neovim, you can set up fzf window using a Vim command
+	let g:fzf_layout = { 'window': 'enew' }
+	let g:fzf_layout = { 'window': '-tabnew' }
+	let g:fzf_layout = { 'window': '10split enew' }
+
+	" Customize fzf colors to match your color scheme
+	let g:fzf_colors =
+	\ { 'fg':      ['fg', 'Normal'],
+	  \ 'bg':      ['bg', 'Normal'],
+	  \ 'hl':      ['fg', 'Comment'],
+	  \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
+	  \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
+	  \ 'hl+':     ['fg', 'Statement'],
+	  \ 'info':    ['fg', 'PreProc'],
+	  \ 'border':  ['fg', 'Ignore'],
+	  \ 'prompt':  ['fg', 'Conditional'],
+	  \ 'pointer': ['fg', 'Exception'],
+	  \ 'marker':  ['fg', 'Keyword'],
+	  \ 'spinner': ['fg', 'Label'],
+	  \ 'header':  ['fg', 'Comment'] }
+
+	" Enable per-command history.
+	" CTRL-N and CTRL-P will be automatically bound to next-history and
+	" previous-history instead of down and up. If you don't like the change,
+	" explicitly bind the keys to down and up in your $FZF_DEFAULT_OPTS.
+
+	let g:fzf_history_dir = '~/.local/share/fzf-history'
+	" --------------------}
+
+
+
+	function! s:testfzf()
+	" -------------------- {
+	if has('nvim') || has('gui_running')
+	  let $FZF_DEFAULT_OPTS .= ' --inline-info'
+	endif
+
+	" Hide statusline of terminal buffer
+	autocmd! FileType fzf
+	autocmd  FileType fzf set laststatus=0 noshowmode noruler
+	  \| autocmd BufLeave <buffer> set laststatus=2 showmode ruler
+
+	let g:fzf_colors =
+	\ { 'fg':      ['fg', 'Normal'],
+	  \ 'bg':      ['bg', 'Normal'],
+	  \ 'hl':      ['fg', 'Comment'],
+	  \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
+	  \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
+	  \ 'hl+':     ['fg', 'Statement'],
+	  \ 'info':    ['fg', 'PreProc'],
+	  \ 'border':  ['fg', 'Ignore'],
+	  \ 'prompt':  ['fg', 'Conditional'],
+	  \ 'pointer': ['fg', 'Exception'],
+	  \ 'marker':  ['fg', 'Keyword'],
+	  \ 'spinner': ['fg', 'Label'],
+	  \ 'header':  ['fg', 'Comment'] }
+
+	command! -bang -nargs=? -complete=dir Files
+	  \ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
+
+	" nnoremap <silent> <Leader><Leader> :Files<CR>
+	nnoremap <silent> <expr> <Leader><Leader> (expand('%') =~ 'NERD_tree' ? "\<c-w>\<c-w>" : '').":Files\<cr>"
+	nnoremap <silent> <Leader>C        :Colors<CR>
+	nnoremap <silent> <Leader><Enter>  :Buffers<CR>
+	nnoremap <silent> <Leader>L        :Lines<CR>
+	command! -bang -nargs=* Ag
+	  \ call fzf#vim#ag(<q-args>,
+	  \                 <bang>0 ? fzf#vim#with_preview('up:60%')
+	  \                         : fzf#vim#with_preview('right:50%:hidden', '?'),
+	  \                 <bang>0)
+	nnoremap <silent> <Leader>ag       :Ag <C-R><C-W><CR>
+	nnoremap <silent> <Leader>AG       :Ag <C-R><C-A><CR>
+	xnoremap <silent> <Leader>ag       y:Ag <C-R>"<CR>
+	nnoremap <silent> <Leader>`        :Marks<CR>
+	" nnoremap <silent> q: :History:<CR>
+	" nnoremap <silent> q/ :History/<CR>
+
+	inoremap <expr> <c-x><c-t> fzf#complete('tmuxwords.rb --all-but-current --scroll 500 --min 5')
+	imap <c-x><c-k> <plug>(fzf-complete-word)
+	imap <c-x><c-f> <plug>(fzf-complete-path)
+	inoremap <expr> <c-x><c-d> fzf#vim#complete#path('blsd')
+	imap <c-x><c-j> <plug>(fzf-complete-file-ag)
+	imap <c-x><c-l> <plug>(fzf-complete-line)
+
+	" nmap <leader><tab> <plug>(fzf-maps-n)
+	" xmap <leader><tab> <plug>(fzf-maps-x)
+	" omap <leader><tab> <plug>(fzf-maps-o)
+
+	function! s:plug_help_sink(line)
+	  let dir = g:plugs[a:line].dir
+	  for pat in ['doc/*.txt', 'README.md']
+		let match = get(split(globpath(dir, pat), "\n"), 0, '')
+		if len(match)
+		  execute 'tabedit' match
+		  return
+		endif
+	  endfor
+	  tabnew
+	  execute 'Explore' dir
+	endfunction
+
+	command! PlugHelp call fzf#run(fzf#wrap({
+	  \ 'source': sort(keys(g:plugs)),
+	  \ 'sink':   function('s:plug_help_sink')}))
+	" -------------------- }
+	endfunction
+
+
+endif
+" }}}
 
 "----------------------------------------------------------------------
 " 自动生成 ctags/gtags，并提供自动索引功能
@@ -190,7 +368,8 @@ if index(g:bundle_group, 'tags') >= 0
 	" 支持光标移动到符号名上：<leader>cg 查看定义，<leader>cs 查看引用
 	Plug 'skywind3000/gutentags_plus'
 
-	" 设定项目目录标志：除了 .git/.svn 外，还有 .root 文件
+	" 设定项目目录标志：除了 .git/.svn 外，还有 .root 文件]
+	" let g:gutentags_project_root = ['.git','.root','.svn','.hg','.project']
 	let g:gutentags_project_root = ['.root']
 	let g:gutentags_ctags_tagfile = '.tags'
 
@@ -217,10 +396,46 @@ if index(g:bundle_group, 'tags') >= 0
 	let g:gutentags_ctags_extra_args += ['--c-kinds=+px']
 
 	" 使用 universal-ctags 的话需要下面这行，请反注释
-	" let g:gutentags_ctags_extra_args += ['--output-format=e-ctags']
+	let g:gutentags_ctags_extra_args += ['--output-format=e-ctags']
 
 	" 禁止 gutentags 自动链接 gtags 数据库
 	let g:gutentags_auto_add_gtags_cscope = 0
+
+	" change focus to quickfix window after search (optional)
+	let g:gutentags_plus_switch = 1
+
+	" disable the default keymaps 
+	let g:gutentags_plus_nomap = 1
+
+	" default keymap
+	"<leader>cs    Find symbol (reference) under cursor
+	"<leader>cg    Find symbol definition under cursor
+	"<leader>cd    Functions called by this function
+	"<leader>cc    Functions calling this function
+	"<leader>ct    Find text string under cursor
+	"<leader>ce    Find egrep pattern under cursor
+	"<leader>cf    Find file name under cursor
+	"<leader>ci    Find files #including the file name under cursor
+	"<leader>ca    Find places where current symbol is assigned
+
+	" define my new maps
+	noremap <silent> <leader>gs :GscopeFind s <C-R><C-W><cr>
+	noremap <silent> <leader>gg :GscopeFind g <C-R><C-W><cr>
+	noremap <silent> <leader>gc :GscopeFind c <C-R><C-W><cr>
+	noremap <silent> <leader>gt :GscopeFind t <C-R><C-W><cr>
+	noremap <silent> <leader>ge :GscopeFind e <C-R><C-W><cr>
+	noremap <silent> <leader>gf :GscopeFind f <C-R>=expand("<cfile>")<cr><cr>
+	noremap <silent> <leader>gi :GscopeFind i <C-R>=expand("<cfile>")<cr><cr>
+	noremap <silent> <leader>gd :GscopeFind d <C-R><C-W><cr>
+	noremap <silent> <leader>ga :GscopeFind a <C-R><C-W><cr>
+
+	"----------vim-preview配置-----------------------------------------
+	"P 预览 大p关闭
+	autocmd FileType qf nnoremap <silent><buffer> p :PreviewQuickfix<cr>
+	autocmd FileType qf nnoremap <silent><buffer> P :PreviewClose<cr>
+	noremap <Leader>u :PreviewScroll -1<cr> " 往上滚动预览窗口
+	noremap <Leader>d :PreviewScroll +1<cr> "  往下滚动预览窗口
+
 endif
 
 
@@ -448,7 +663,8 @@ if index(g:bundle_group, 'leaderf') >= 0
 		let g:Lf_StlSeparator = { 'left': '', 'right': '', 'font': '' }
 
 		" 如何识别项目目录，从当前文件目录向父目录递归知道碰到下面的文件/目录
-		let g:Lf_RootMarkers = ['.project', '.root', '.svn', '.git']
+		" let g:Lf_RootMarkers = ['.project', '.root', '.svn', '.git']
+		let g:Lf_RootMarkers = ['.root']
 		let g:Lf_WorkingDirectoryMode = 'Ac'
 		let g:Lf_WindowHeight = 0.30
 		let g:Lf_CacheDirectory = expand('~/.vim/cache')
@@ -518,13 +734,54 @@ if index(g:bundle_group, 'leaderf') >= 0
 endif
 
 
+" ============================================================================
+" 快速注释
+" nerdcommenter {{{
+" ============================================================================
+if index(g:bundle_group, 'old') >= 0
+	Plug 'scrooloose/nerdcommenter'
+
+	 " 注释的时候自动加个空格, 强迫症必配
+	 let g:NERDSpaceDelims=1
+
+
+	Plug 'vim-scripts/Mark--Karkat'
+	nmap <Leader>M <Plug>MarkToggle 
+	" nmap <Leader><SPACE> <Plug>MarkAllClear
+	" nmap <Leader>MM <Plug>MarkAllClear
+	nmap ,<SPACE> <Plug>MarkAllClear
+
+	Plug 'jremmen/vim-ripgrep'
+	Plug 'mileszs/ack.vim'
+
+	Plug 'majutsushi/tagbar'
+	map <f10> :TagbarToggle<cr>
+	inoremap <silent> <F10> <esc> :TagbarToggle<cr>
+	" inoremap <silent> <leader>t <esc> :TagbarToggle<cr>
+endif
+" }}}
+
+" ============================================================================
+" 自动补全插件YCM
+" YouCompleteMe {{{
+" ============================================================================
+if index(g:bundle_group, 'ycm') >= 0
+	Plug 'Valloric/YouCompleteMe', { 'do': './install.py --clang-completer',
+            \ 'for': ['s', 'S', 'c', 'h', 'C', 'cpp', 'cc', 'cxx', 'py', 'go', 'java', 'js', 'php', 'sh', 'conf', 'vimrc', 'bashrc', 'config', 'ini'] }
+
+endif
+" }}}
+
+
+
+
 "----------------------------------------------------------------------
 " 结束插件安装
 "----------------------------------------------------------------------
 call plug#end()
 
 
-
+if 0
 "----------------------------------------------------------------------
 " YouCompleteMe 默认设置：YCM 需要你另外手动编译安装
 "----------------------------------------------------------------------
@@ -542,6 +799,48 @@ let g:ycm_key_invoke_completion = '<c-z>'
 set completeopt=menu,menuone,noselect
 
 " noremap <c-z> <NOP>
+endif
+
+if 1
+" ============================================================================
+" YouCompleteMe.vim {{{
+" ============================================================================
+" 补全配置脚本 
+" function! s:ycm_test()
+let g:ycm_global_ycm_extra_conf='~/.vim/.ycm_extra_conf.py'
+
+" 弹出列表时选择第1项的快捷键(默认为<TAB>和<Down>)
+let g:ycm_key_list_select_completion = ['<C-n>', '<Down>']
+" 弹出列表时选择前1项的快捷键(默认为<S-TAB>和<UP>)
+let g:ycm_key_list_previous_completion = ['<C-p>', '<Up>']
+" 主动补全, 默认为<C-Space>
+let g:ycm_key_invoke_completion = '<C-x>'
+" 停止显示补全列表(防止列表影响视野),可以按<C-x>重新弹出
+let g:ycm_key_list_stop_completion = ['<C-y>']
+
+" 停止提示是否载入本地ycm_extra_conf文件
+let g:ycm_confirm_extra_conf = 0
+
+let g:ycm_seed_identifiers_with_syntax = 1
+" 开启YCM 基于标签引擎
+let g:ycm_collect_identifiers_from_tags_files = 1
+" 从第2个键入字符就开始罗列匹配项
+let g:ycm_min_num_of_chars_for_completion = 2
+" 开启输入注释时补全
+let g:ycm_complete_in_comments = 1
+" 开启输入字符串时补全
+let g:ycm_complete_in_strings = 1
+" 开启注释和字符串中收集补全
+let g:ycm_collect_identifiers_from_comments_and_strings = 1
+" 关闭函数预览
+let g:ycm_add_preview_to_completeopt = 0
+" 关闭代码诊断
+let g:ycm_show_diagnostics_ui = 0
+" 设置标识符补全最小字符数
+let g:ycm_min_num_identifier_candidate_chars = 2
+" 设置以下语言自动弹出语义补全(默认需要输入'.->::'或者按主动补全组合键)
+
+endif
 
 " 两个字符自动触发语义补全
 let g:ycm_semantic_triggers =  {
@@ -607,5 +906,52 @@ let g:ycm_filetype_whitelist = {
 			\ "zimbu":1,
 			\ "ps1":1,
 			\ }
+
+" ============================================================================
+" Quickfix {{{
+" ============================================================================
+"Quickfix
+nmap <leader>cd :cn<cr>
+nmap <leader>cp :cp<cr>
+nmap <leader>cw :botright copen<cr>
+nmap <leader>cq :cclose<cr>
+nmap <leader>lq :lclose<cr>
+nmap <leader>rg :Rgrep<cr>
+" nmap <leader>gc :G /\<<c-r>=expand("<cword>")<cr>\>/<cr>
+" nmap <leader>ga :Grep /\<<c-r>=expand("<cword>")<cr>\><cr>
+nmap <leader>cb :botright cwindow<cr>
+
+nmap <leader>qo :QFix<CR>
+
+nmap <leader>ft :call QFixToggle(1)<CR>
+command! -bang -nargs=? QFix call QFixToggle(<bang>0)
+ 
+function! QFixToggle(forced)
+    if exists("g:qfix_win") && a:forced != 0
+        cclose
+    else
+        if exists("g:my_quickfix_win_height")
+            execute "copen ".g:my_quickfix_win_height
+        else
+            botright copen
+        endif
+    endif
+endfunction
+ 
+augroup QFixToggle
+    autocmd!
+    autocmd BufWinEnter quickfix let g:qfix_win = bufnr("$")
+    autocmd BufWinLeave * if exists("g:qfix_win") && expand("<abuf>") == g:qfix_win | unlet! g:qfix_win | endif
+augroup END
+" }}}
+
+
+" ============================================================================
+" ack {{{
+" ============================================================================
+let g:ackprg = 'ag --nogroup --nocolor --column'
+nnoremap <leader>F :Ack<space>
+
+" }}}
 
 

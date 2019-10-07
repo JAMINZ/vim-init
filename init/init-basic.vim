@@ -37,6 +37,7 @@ set ttimeout
 
 " 功能键超时检测 50 毫秒
 set ttimeoutlen=50
+"set ttimeoutlen=6000
 
 " 显示光标位置
 set ruler
@@ -167,6 +168,13 @@ set wildignore+=*.ppt,*.pptx,*.docx,*.xlt,*.xls,*.xlsx,*.odt,*.wps
 set wildignore+=*.msi,*.crx,*.deb,*.vfd,*.apk,*.ipa,*.bin,*.msu
 set wildignore+=*.gba,*.sfc,*.078,*.nds,*.smd,*.smc
 set wildignore+=*.linux2,*.win32,*.darwin,*.freebsd,*.linux,*.android
+
+"设置','为leader快捷键
+let mapleader = " "
+let g:mapleader = " "
+" let mapleader = ","
+" let g:mapleader = ","
+
 
 
 
