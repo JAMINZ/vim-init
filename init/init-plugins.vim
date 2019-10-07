@@ -81,6 +81,25 @@ function! s:setup_dirvish()
 	noremap <buffer> % :e %
 endfunc
 
+
+" refer http://goushi.me/navigation-in-vim/
+augroup dirvish_config
+    autocmd!
+
+    " Map `t` to open in new tab.
+    autocmd FileType dirvish
+                \  nnoremap <silent><buffer> t :call dirvish#open('tabedit', 0)<CR>
+                \ |xnoremap <silent><buffer> t :call dirvish#open('tabedit', 0)<CR>
+
+    " Map `gr` to reload.
+    autocmd FileType dirvish nnoremap <silent><buffer>
+                \ gr :<C-U>Dirvish %<CR>
+
+    " Map `gh` to hide dot-prefixed files.  Press `R` to "toggle" (reload).
+    autocmd FileType dirvish nnoremap <silent><buffer>
+                \ gh :silent keeppatterns g@\v/\.[^\/]+/?$@d _<cr>:setl cole=3<cr>
+augroup END
+
 augroup MyPluginSetup
 	autocmd!
 	autocmd FileType dirvish call s:setup_dirvish()
@@ -640,6 +659,8 @@ if index(g:bundle_group, 'leaderf') >= 0
 
 		" ALT+n 打开 buffer 模糊匹配
 		let g:Lf_ShortcutB = '<m-n>'
+		" let g:Lf_ShortcutB = '<c-b>'
+		" let g:Lf_ShortcutB = '<C-f>b'
 
 		" CTRL+n 打开最近使用的文件 MRU，进行模糊匹配
 		noremap <c-n> :LeaderfMru<cr>
@@ -658,6 +679,23 @@ if index(g:bundle_group, 'leaderf') >= 0
 
 		" 最大历史文件保存 2048 个
 		let g:Lf_MruMaxFiles = 2048
+
+		" -------------------- {
+		" refer http://goushi.me/navigation-in-vim/
+		" let g:Lf_ShortcutF = '<C-f>p'
+		" let g:Lf_ShortcutB = '<C-f>b'
+		" noremap <C-f>u :LeaderfMru<CR>
+		" noremap <C-f>f :LeaderfFunction!<CR>
+		" noremap <C-f>t :LeaderfTag<CR>
+		" noremap <C-f>l :LeaderfLine<CR>
+		" noremap <C-f>c :LeaderfHistoryCmd<CR>
+		" noremap <C-f>s :LeaderfHistorySearch<CR>
+		" noremap <C-f>h :LeaderfHelp<CR>
+		" noremap <Leader>fm :LeaderfMru<cr>
+		noremap <Leader>fc :LeaderfHistoryCmd<CR>
+		noremap <Leader>fl :LeaderfLine<cr>
+ 
+		" -------------------- }
 
 		" ui 定制
 		let g:Lf_StlSeparator = { 'left': '', 'right': '', 'font': '' }
